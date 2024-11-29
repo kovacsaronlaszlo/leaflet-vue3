@@ -12,10 +12,10 @@
     <input type="text" placeholder="Enter new name" @input="onNameChange" />
   </div>
   <div>
-    <p>Your position: {{ cityName }}</p>
+    <p>Your position: {{ currentCity.cityName }}</p>
     <ul>
-      <li>lat: {{ lat }}</li>
-      <li>long: {{ lon }}</li>
+      <li>lat: {{ currentCity.lat }}</li>
+      <li>long: {{ currentCity.lon }}</li>
     </ul>
   </div>
 </template>
@@ -33,7 +33,7 @@ const nameStore = useNameStore();
 const locationStore = useLocationStore();
 const { name, fancyName } = storeToRefs(nameStore);
 const { doubleCount, count } = storeToRefs(store);
-const { lat, lon, cityName } = locationStore.currentCity;
+const { currentCity } = storeToRefs(locationStore);
 const { increment, decrement } = store;
 
 const onNameChange = (event: Event) => {

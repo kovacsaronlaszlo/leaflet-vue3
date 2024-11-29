@@ -28,13 +28,21 @@ export const useNameStore = defineStore("name", {
 });
 
 export const useLocationStore = defineStore("location", {
-  state: () => ({
-    currentCity: {
-      lat: 0,
-      lon: 0,
-      cityName: "Unknown",
-    },
-  }),
+  state: () => {
+    const storedLocation = localStorage.getItem("location");
+
+    const currentCity = storedLocation
+      ? JSON.parse(storedLocation)
+      : {
+          lat: 0,
+          lon: 0,
+          cityName: "Unknown",
+        };
+
+    return {
+      currentCity,
+    };
+  },
   actions: {
     async fetchCityByCoordinates(lat: number, lon: number) {
       try {
@@ -78,7 +86,7 @@ export const useLocationStore = defineStore("location", {
 
     updateCurrentCity(lat: number, lon: number, cityName: string) {
       this.currentCity = { lat, lon, cityName };
+      localStorage.setItem("location", JSON.stringify(this.currentCity));
     },
   },
 });
-
