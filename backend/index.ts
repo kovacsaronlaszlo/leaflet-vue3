@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import cities from "all-the-cities";
 import cors from "cors";
+import { findClosestCity } from "./helpers/coordination";
 
 const app = express();
 const port = 8000;
@@ -9,26 +10,31 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/city", (req: Request, res: Response) => {
-  const cityName = req.query.name as string;
+  const cityId = Number(req.query.cityId);
 
-  if (!cityName) {
-    return res.status(400).json({ error: "City name is required" });
+  if (!cityId) {
+    return res
+      .status(400)
+      .json({ error: "City ID is required and must be a number" });
   }
 
-  const city = cities.find(
-    (c) => c.name.toLowerCase() === cityName.toLowerCase()
-  );
+  const city = cities.find((c) => c.cityId === cityId);
 
   if (!city) {
     return res.status(404).json({ error: "City not found" });
   }
 
-  const [latitude, longitude] = city.loc.coordinates;
+  const [longitude, latitude] = city.loc.coordinates;
 
   return res.json({
-    city: city.name,
-    longitude: longitude,
-    latitude: latitude,
+    ...city,
+    loc: {
+      ...city.loc,
+      coordinates: {
+        latitude,
+        longitude
+      }
+    }
   });
 });
 
@@ -39,38 +45,26 @@ app.get("/city/coords", (req: Request, res: Response) => {
   if (isNaN(latitude) || isNaN(longitude)) {
     return res.status(400).json({ error: "Invalid latitude or longitude" });
   }
-  console.log('latitude',latitude)
-  console.log('longitude',longitude)
-  //{"city":"Budapest XI. kerület","longitude":47.47603,"latitude":19.03605}
-  console.log(cities.filter(c => c.name.includes("Budapest XI. kerület")))
-  const city = cities.find((c) => {
-    const [cityLong, cityLat] = c.loc.coordinates;
-    return (
-      Math.abs(cityLat - latitude) < 0.1 && Math.abs(cityLong - longitude) < 0.1
-    );
-  });
+  const city = findClosestCity(cities, latitude, longitude);
 
   if (!city) {
     return res.status(404).json({ error: "City not found" });
   }
 
-  console.log(city)
-
   return res.json({
-    city: city.name,
-    longitude: city.loc.coordinates[0],
-    latitude: city.loc.coordinates[1],
+    ...city,
+    loc: {
+      ...city.loc,
+      coordinates: {
+        latitude: city.loc.coordinates[1],
+        longitude: city.loc.coordinates[0]
+      }
+    }
   });
 });
 
 app.get("/cities", (req: Request, res: Response) => {
-  const cityData = cities.map((city) => ({
-    city: city.name,
-    longitude: city.loc.coordinates[0],
-    latitude: city.loc.coordinates[1],
-  }));
-
-  return res.json(cityData);
+  return res.json(cities);
 });
 
 app.listen(port, () => {
