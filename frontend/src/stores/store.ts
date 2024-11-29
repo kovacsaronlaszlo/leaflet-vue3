@@ -36,59 +36,49 @@ export const useLocationStore = defineStore("location", {
     },
   }),
   actions: {
-    async fetchCurrentLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-
-            try {
-              const response = await fetch(
-                `http://localhost:8000/city/coords?latitude=${lat}&longitude=${lon}`
-              );
-              if (response.ok) {
-                const data = await response.json();
-
-                this.currentCity = {
-                  lat: lat,
-                  lon: lon,
-                  cityName: data.city,
-                };
-              } else {
-                console.error("City not found in the response.");
-                this.currentCity = {
-                  lat: lat,
-                  lon: lon,
-                  cityName: "Unknown Location",
-                };
-              }
-            } catch (error) {
-              console.error("Error fetching city by coordinates:", error);
-              this.currentCity = {
-                lat: lat,
-                lon: lon,
-                cityName: "Unknown Location",
-              };
-            }
-          },
-          (error) => {
-            console.error("Error fetching location:", error.message);
-            this.currentCity = {
-              lat: 0,
-              lon: 0,
-              cityName: "Unknown Location",
-            };
-          }
+    async fetchCityByCoordinates(lat: number, lon: number) {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/city/coords?latitude=${lat}&longitude=${lon}`
         );
-      } else {
-        console.error("Geolocation is not supported by this browser.");
-        this.currentCity = {
-          lat: 0,
-          lon: 0,
-          cityName: "Unknown Location",
-        };
+        if (response.ok) {
+          const data = await response.json();
+          return data.name || "Unknown Location";
+        } else {
+          console.error("City not found in the response.");
+          return "Unknown Location";
+        }
+      } catch (error) {
+        console.error("Error fetching city by coordinates:", error);
+        return "Unknown Location";
       }
+    },
+
+    async fetchCurrentLocation() {
+      if (!navigator.geolocation) {
+        console.error("Geolocation is not supported by this browser.");
+        this.updateCurrentCity(0, 0, "Unknown Location");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          const cityName = await this.fetchCityByCoordinates(lat, lon);
+          this.updateCurrentCity(lat, lon, cityName);
+        },
+        (error) => {
+          console.error("Error fetching location:", error.message);
+          this.updateCurrentCity(0, 0, "Unknown Location");
+        }
+      );
+    },
+
+    updateCurrentCity(lat: number, lon: number, cityName: string) {
+      this.currentCity = { lat, lon, cityName };
     },
   },
 });
+

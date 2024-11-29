@@ -30,9 +30,10 @@ import {
 
 const store = useCounterStore();
 const nameStore = useNameStore();
-const {cityName, lat, lon} = useLocationStore().currentCity;
+const locationStore = useLocationStore();
 const { name, fancyName } = storeToRefs(nameStore);
 const { doubleCount, count } = storeToRefs(store);
+const { lat, lon, cityName } = locationStore.currentCity;
 const { increment, decrement } = store;
 
 const onNameChange = (event: Event) => {
