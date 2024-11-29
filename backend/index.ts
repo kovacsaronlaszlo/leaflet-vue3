@@ -41,32 +41,33 @@ app.get("/city/coords", (req: Request, res: Response) => {
   }
   console.log('latitude',latitude)
   console.log('longitude',longitude)
+  //{"city":"Budapest XI. kerület","longitude":47.47603,"latitude":19.03605}
+  console.log(cities.filter(c => c.name.includes("Budapest XI. kerület")))
   const city = cities.find((c) => {
-    const [cityLat, cityLong] = c.loc.coordinates;
-    console.log()
+    const [cityLong, cityLat] = c.loc.coordinates;
     return (
       Math.abs(cityLat - latitude) < 0.1 && Math.abs(cityLong - longitude) < 0.1
     );
   });
 
-  console.log(city);
-
   if (!city) {
     return res.status(404).json({ error: "City not found" });
   }
 
+  console.log(city)
+
   return res.json({
     city: city.name,
-    longitude: city.loc.coordinates[1],
-    latitude: city.loc.coordinates[0],
+    longitude: city.loc.coordinates[0],
+    latitude: city.loc.coordinates[1],
   });
 });
 
 app.get("/cities", (req: Request, res: Response) => {
   const cityData = cities.map((city) => ({
     city: city.name,
-    longitude: city.loc.coordinates[1],
-    latitude: city.loc.coordinates[0],
+    longitude: city.loc.coordinates[0],
+    latitude: city.loc.coordinates[1],
   }));
 
   return res.json(cityData);

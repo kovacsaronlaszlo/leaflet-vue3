@@ -50,11 +50,9 @@ export const useLocationStore = defineStore("location", {
               if (response.ok) {
                 const data = await response.json();
 
-                console.log(data)
-
                 this.currentCity = {
-                  lat: data.latitude,
-                  lon: data.longitude,
+                  lat: lat,
+                  lon: lon,
                   cityName: data.city,
                 };
               } else {

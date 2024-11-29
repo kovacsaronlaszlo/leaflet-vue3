@@ -22,11 +22,15 @@
 
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { useCounterStore, useNameStore, useLocationStore } from "../stores/store";
+import {
+  useCounterStore,
+  useNameStore,
+  useLocationStore,
+} from "../stores/store";
 
 const store = useCounterStore();
 const nameStore = useNameStore();
-const {lat, lon, cityName} = useLocationStore().currentCity;
+const {cityName, lat, lon} = useLocationStore().currentCity;
 const { name, fancyName } = storeToRefs(nameStore);
 const { doubleCount, count } = storeToRefs(store);
 const { increment, decrement } = store;
